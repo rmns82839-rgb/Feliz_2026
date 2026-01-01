@@ -15,6 +15,18 @@ if (nombresContainer) {
     });
 }
 
+// Función maestra para el audio (Solución GitHub)
+function intentarReproducir() {
+    const audio = document.getElementById('musica');
+    if (audio) {
+        audio.play().then(() => {
+            console.log("Música sonando correctamente");
+        }).catch(err => {
+            console.log("El navegador aún bloquea el audio. Esperando interacción...");
+        });
+    }
+}
+
 function activarTodo() {
     if (iniciado) return;
     iniciado = true;
@@ -24,18 +36,12 @@ function activarTodo() {
     if(capaEspera) capaEspera.style.display = 'none';
     if(crawl) crawl.style.display = 'block';
     
-    // --- MEJORA DE AUDIO PARA GITHUB ---
-    const audio = document.getElementById('musica');
-    if (audio) {
-        audio.currentTime = 0; // Asegura que empiece desde el inicio
-        audio.play().then(() => {
-            console.log("Audio iniciado");
-        }).catch(err => {
-            console.log("Reintentando audio tras interacción...");
-            // Si falla, intentamos una vez más al mover el mouse o tocar
-            document.addEventListener('touchstart', () => audio.play(), {once:true});
-        });
-    }
+    // Intento inmediato de audio
+    intentarReproducir();
+    
+    // Respaldo de audio: Si falla, sonará al siguiente toque en cualquier parte
+    window.addEventListener('touchstart', intentarReproducir, {once: true});
+    window.addEventListener('mousedown', intentarReproducir, {once: true});
     
     animate(); 
     
@@ -71,16 +77,13 @@ class Particle {
         this.gravity = type === 'firework' ? 0.15 : 0.06;
         this.friction = 0.96;
         this.alpha = 1;
-        this.decay = Math.random() * 0.01 + 0.008; // Desvanecimiento más suave
+        this.decay = Math.random() * 0.01 + 0.008; 
         
         this.rotation = Math.random() * Math.PI * 2;
         this.rotationSpeed = Math.random() * 0.2 - 0.1;
-        
-        // Tamaño para estrellas
         this.size = type === 'firework' ? 2 : Math.random() * 10 + 10;
     }
 
-    // Método para dibujar una estrella
     drawStar(ctx, x, y, spikes, outerRadius, innerRadius) {
         let rot = Math.PI / 2 * 3;
         let cx = x;
@@ -127,7 +130,6 @@ class Particle {
             ctx.arc(this.x, this.y, 2, 0, Math.PI * 2);
             ctx.fill();
         } else {
-            // Dibujar Confeti en forma de ESTRELLAS
             ctx.translate(this.x, this.y);
             ctx.rotate(this.rotation);
             ctx.shadowBlur = 5;
